@@ -1,6 +1,5 @@
 import { Worker } from "worker_threads";
 import * as fs from "fs";
-import { timeStamp } from "console";
 
 export default class WavRepository {
 
@@ -17,7 +16,7 @@ export default class WavRepository {
 
     /**
      * _onMessage
-     * @privatea
+     * @private
      * @param {ArrayBuffer} data 
      */
     _onMessage(data) {

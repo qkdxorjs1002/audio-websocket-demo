@@ -20,7 +20,8 @@ export default class WSController {
     }
     
     /**
-     * onClose
+     * _onClose
+     * @private
      */
     _onClose() { 
         // dump wav
@@ -28,9 +29,10 @@ export default class WSController {
     }
     
     /**
-     * onMessage
+     * _onMessage
+     * @private
      * @param {Buffer} message 
-     * @returns 
+     * @returns {void}
      */
     _onMessage(message) {
         let wsMessage;
@@ -72,7 +74,8 @@ export default class WSController {
         }
     }
 
-    /** * onBuffer
+    /** _onBuffer
+     * @private
      * @param {Object} data 
      */
     _onBuffer(data) {
@@ -81,7 +84,8 @@ export default class WSController {
     }
 
     /**
-     * 
+     * _sendMessage
+     * @private
      * @param {String} event 
      * @param {Object} message 
      */
