@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "command": "yarn start-ws",
+            "name": "start-ws",
+            "request": "launch",
+            "type": "node-terminal",
+            "cwd": "${workspaceFolder}/src/server"
+        },
+    ]
+}
