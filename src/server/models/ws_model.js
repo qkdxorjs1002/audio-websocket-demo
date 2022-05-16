@@ -11,8 +11,12 @@ class WSMessage {
      * @returns {WSMessage}
      */
     static fromJson(message) {
+        let json = (typeof message === "string") 
+            ? JSON.parse(message)
+            : message;
+
         return new WSMessage(
-            message.event, message.data
+            json.event, json.data
         );
     }
 
@@ -21,10 +25,12 @@ class WSMessage {
      * @returns {Object}
      */
     toJson() {
-        return {
-            "event": this.type,
-            "data": this.data
-        };
+        return JSON.stringify({
+            event: this.event,
+            data: (this.data instanceof WSMessageAudioData) 
+                ? this.data.toJson() 
+                : this.data
+        });
     }
 }
 
@@ -48,9 +54,15 @@ class WSMessageAudioData {
      * @returns {WSMessageAudioData}
      */
     static fromJson(message) {
+        let json = (typeof message === "string") 
+            ? JSON.parse(message)
+            : message;
+
         return new WSMessageAudioData(
-            message.seq, message.size, 
-            Buffer.from(message.buffer, "base64").buffer
+            json.seq, json.size, 
+            (typeof Buffer !== "undefined")
+                ? Buffer.from(json.buffer, "base64").buffer
+                : Uint8Array.fromCharCode(atob(json.buffer))
         );
     }
 
@@ -59,11 +71,13 @@ class WSMessageAudioData {
      * @returns {Object}
      */
     toJson() {
-        return {
-            "seq": this.seq,
-            "size": this.size,
-            "buffer": this.buffer
-        };
+        return JSON.stringify({
+            seq: this.seq,
+            size: this.size,
+            buffer: (typeof Buffer !== "undefined") 
+                ? Buffer.from(this.buffer).toString("base64")
+                : btoa(String.fromCharCode(...new Uint8Array(this.buffer)))
+        });
     }
 }
 

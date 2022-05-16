@@ -90,7 +90,7 @@ export default class WSController {
      * @param {Object} message 
      */
     _sendMessage(event, message) {
-        this.ws.send(JSON.stringify(new WSMessage(event, message)));
+        this.ws.send(new WSMessage(event, message).toJson());
     }
 
 }
