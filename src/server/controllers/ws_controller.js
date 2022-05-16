@@ -15,6 +15,8 @@ export default class WSController {
         this.ws = ws;
         this.ws.addListener("message", (message) => this._onMessage(message));
         this.ws.addListener("close", () => this._onClose());
+        this.remoteAddress = request.socket.remoteAddress;
+        console.log("WSServer:", this.remoteAddress);
     }
     
     /**
@@ -38,6 +40,8 @@ export default class WSController {
      */
     _onMessage(message) {
         let wsMessage;
+
+        console.log("WSServer: Message from", this.remoteAddress);
         
         try {
             const json = JSON.parse(message.toString());
