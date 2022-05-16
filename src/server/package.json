@@ -4,8 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start-web": "node ./bin/http.js",
-    "start-ws": "node ./bin/ws.js"
+    "start": "node ./bin/server"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

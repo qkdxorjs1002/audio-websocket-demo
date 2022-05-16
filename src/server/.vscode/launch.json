@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "start-ws",
+            "name": "start-server",
             "request": "launch",
             "type": "node",
-            "program": "${workspaceFolder}/bin/ws"
+            "program": "${workspaceFolder}/bin/server"
         },
     ]
 }

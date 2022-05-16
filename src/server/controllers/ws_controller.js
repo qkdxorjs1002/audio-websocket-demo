@@ -4,9 +4,7 @@ import WavRepository from "../repositories/wav_repository.js";
 
 export default class WSController {
 
-    constructor() {
-        this.wavRepository = new WavRepository(16000, 16, 1);
-    }
+    constructor() {}
 
     /**
      * onConnect
@@ -24,8 +22,12 @@ export default class WSController {
      * @private
      */
     _onClose() { 
-        // dump wav
-        this.wavRepository.dump(this.uuid);
+        if (this.uuid) {
+            // dump wav
+            this.wavRepository.dump(this.uuid);
+        }
+
+        console.log("WSServer: websocket closed");
     }
     
     /**
@@ -49,6 +51,7 @@ export default class WSController {
         switch (wsMessage.event) {
             case "init":
                 this.uuid = randomUUID();
+                this.wavRepository = new WavRepository(16000, 16, 1);
                 this._sendMessage("ok", { id: this.uuid });
                 break;
             case "audio":
