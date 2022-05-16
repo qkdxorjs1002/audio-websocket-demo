@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "start-ws",
+            "request": "launch",
+            "type": "node",
+            "program": "${workspaceFolder}/bin/ws"
+        },
+    ]
+}
