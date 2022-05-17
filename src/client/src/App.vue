@@ -20,6 +20,7 @@ export default {
         }
     },
     mounted() {
+        this.isMicStreamStopped = true;
         this.wavesurfer = WaveSurfer.create({
             width: 360,
             height: 200,
@@ -41,7 +42,26 @@ export default {
         });
         this.wavesurfer.stop();
         
-        this.recorderService = RecorderService.createPreConfigured();
+        this.recorderService = new RecorderService({
+            broadcastAudioProcessEvents: true,
+            enableDynamicsCompressor: true,
+            noAudioWorklet: false,
+            micGain: 1.0,
+            outputGain: 1.0,
+            bufferSize: 4096,
+            stopTracksAndCloseCtxWhenFinished: true,
+            usingMediaRecorder: false,
+            latencyHint: 'interactive',
+            sampleRate: 16000,
+            debugging: true,
+            audioConstraints: {
+                channelCount: 1,
+                sampleRate: 16000,
+                autoGainControl: false,
+                echoCancellation: false,
+                noiseSuppression: false
+            }
+        });
 
         this.recorderService.em.addEventListener("onaudioprocess", (event) => {
             this.wavesurfer.loadDecodedBuffer(event.detail.buffer);
@@ -51,11 +71,18 @@ export default {
                 new WSMessageAudioData(0, 0, event.detail.buffer.getChannelData(0).buffer)
             )).toJson();
             this.webSocketClient.send(message);
+            
+            // check user stop mic streaming
+            if (this.isMicStreamStopped) {    
+                this.recorderService.stop();
+                this.webSocketClient.close();
+                this.setMicButtonIcon("off");
+            }
         });
     },
     methods: {
         onMicClick() {
-            if (this.recorderService.state !== "recording") {
+            if (this.isMicStreamStopped) {
                 this.onMicOn();
             } else {
                 this.onMicOff();
@@ -68,12 +95,7 @@ export default {
             this.webSocketClient.onmessage = this.onWSMessage;
         },
         onMicOff() {
-            this.recorderService.stop();
-            this.webSocketClient.close();
-            this.setMicButtonIcon("off");
-        },
-        setMicButtonIcon(state) {
-            this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
+            this.isMicStreamStopped = true;
         },
         onWSConnected(event) {
             // send init message
@@ -90,6 +112,7 @@ export default {
                     this.uniqueId = message.data.id;
                     this.recorderService.record();
                     this.setMicButtonIcon("on");
+                    this.isMicStreamStopped = false;
                     break;
                 case "error":
                     onMicOff();
@@ -97,6 +120,9 @@ export default {
                     console.log(message.data);
                     break;
             }
+        },
+        setMicButtonIcon(state) {
+            this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
         }
     },
 };

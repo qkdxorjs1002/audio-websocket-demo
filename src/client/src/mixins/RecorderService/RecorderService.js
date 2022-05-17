@@ -27,7 +27,7 @@ export default class RecorderService {
          * 'noAudioWorklet'                     : AudioWorkletNode 사용 여부</br>
          * 'micGain'                            : 마이크 입력 증폭<br/>
          * 'outputGain'                         : 오디오 증폭<br/>
-         * 'processorBufferSize'                : ScriptProcessor 버퍼 크기<br/>
+         * 'bufferSize'                : 오디오 버퍼 크기<br/>
          * 'stopTracksAndCloseCtxWhenFinished'  : 녹음 종료 후 자원 해제 여부<br/>
          * 'usingMediaRecorder'                 : MediaRecorder 사용 여부<br/>
          * 'latencyHint'                        : 오디오 처리 우선 순위 (balanced | interactive | playback)<br/>
@@ -42,7 +42,7 @@ export default class RecorderService {
             noAudioWorklet: false,
             micGain: 1.0,
             outputGain: 1.0,
-            processorBufferSize: 2048,
+            bufferSize: 4096,
             stopTracksAndCloseCtxWhenFinished: true,
             usingMediaRecorder: typeof window.MediaRecorder !== 'undefined',
             latencyHint: 'balanced',
@@ -67,7 +67,7 @@ export default class RecorderService {
             noAudioWorklet: false,
             micGain: 1.0,
             outputGain: 1.0,
-            processorBufferSize: 0,
+            bufferSize: 4096,
             stopTracksAndCloseCtxWhenFinished: true,
             usingMediaRecorder: false,
             latencyHint: 'interactive',
@@ -190,7 +190,7 @@ export default class RecorderService {
 
                 this.audioBuffer = this.audioCtx.createBuffer(
                     this.config.audioConstraints.channelCount || 1,
-                    4096,
+                    this.config.bufferSize,
                     this.audioCtx.sampleRate
                 );
             }).catch((e) => {
@@ -198,7 +198,7 @@ export default class RecorderService {
                 console.log("RecorderService: AudioWorkletNode is not available. Use ScriptProcessorNode.");
                 this.config.noAudioWorklet = true;
                 this.processorNode = this.audioCtx.createScriptProcessor(
-                    this.config.processorBufferSize,
+                    this.config.bufferSize,
                     this.config.audioConstraints.channelCount || 1,
                     1
                 );
