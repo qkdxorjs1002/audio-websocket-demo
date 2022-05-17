@@ -20,16 +20,18 @@ export default class WavRepository {
      * @param {ArrayBuffer} data 
      */
     _onMessage(data) {
-        const fileName = this.identifier + ".wav";
-        if (fs.existsSync(fileName)) {
+        const filePath = this.identifier + ".wav";
+        if (fs.existsSync(filePath)) {
             // if file exist
-            console.log("WavRepository: file", filename, "is exist");
+            console.log("WavRepository: file", filePath, "is exist");
         }
         // create audio file
         new Promise(() => {
-            console.log("WavRepository: write audio file", fileName);
-            fs.writeFileSync(fileName, Buffer.from(new Uint8Array(data[0])), "binary");
-        }).then(() => this.close());
+            console.log("WavRepository: write audio file", filePath);
+            fs.writeFileSync(filePath, Buffer.from(new Uint8Array(data[0])), "binary");
+            console.log("WavRepository: terminate encoder worker");
+            this.close();
+        });
     }
 
     /**

@@ -75,6 +75,5 @@ parentPort.on("message", (message) => {
     }
     else if (message.event === "close") {
         parentPort.close();
-        process.exit(0);
     }
 });
