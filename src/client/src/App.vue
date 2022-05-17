@@ -66,11 +66,12 @@ export default {
         this.recorderService.em.addEventListener("onaudioprocess", (event) => {
             this.wavesurfer.loadDecodedBuffer(event.detail.buffer);
             // send audio message
-            let message = (new WSMessage(
-                "audio", 
-                new WSMessageAudioData(0, 0, event.detail.buffer.getChannelData(0).buffer)
-            )).toJson();
-            this.webSocketClient.send(message);
+            // let message = (new WSMessage(
+            //     "audio", 
+            //     new WSMessageAudioData(0, 0, event.detail.buffer.getChannelData(0).buffer)
+            // )).toJson();
+            // this.webSocketClient.send(message);
+            this.webSocketClient.send(event.detail.buffer.getChannelData(0));
             
             // check user stop mic streaming
             if (this.isMicStreamStopped) {    
@@ -89,7 +90,7 @@ export default {
             }
         },
         onMicOn() {
-            this.webSocketClient = new WebSocket("wss://192.168.50.177:3000/");
+            this.webSocketClient = new WebSocket("wss://ai-mediazen.com:51003/ws");
             this.webSocketClient.onopen = this.onWSConnected;
             this.webSocketClient.onclose = this.onWSClosed;
             this.webSocketClient.onmessage = this.onWSMessage;
@@ -99,27 +100,36 @@ export default {
         },
         onWSConnected(event) {
             // send init message
-            this.webSocketClient.send((new WSMessage("init")).toJson());
+            //this.webSocketClient.send((new WSMessage("init")).toJson());
+            var msg = {
+                language: "ko",
+                intermediates: true,
+                cmd: "join"
+            };
+            this.webSocketClient.send(JSON.stringify(msg));
         },
         onWSClosed(event) {
             this.webSocketClient = null;
         },
         onWSMessage(event) {
-            let message = WSMessage.fromJson(event.data);
+            console.log(event);
+            this.recorderService.record();
+            this.isMicStreamStopped = false;
+            // let message = WSMessage.fromJson(event.data);
 
-            switch (message.event) {
-                case "ok":
-                    this.uniqueId = message.data.id;
-                    this.recorderService.record();
-                    this.setMicButtonIcon("on");
-                    this.isMicStreamStopped = false;
-                    break;
-                case "error":
-                    onMicOff();
-                    alert(message.data);
-                    console.log(message.data);
-                    break;
-            }
+            // switch (message.event) {
+            //     case "ok":
+            //         this.uniqueId = message.data.id;
+            //         this.recorderService.record();
+            //         this.setMicButtonIcon("on");
+            //         this.isMicStreamStopped = false;
+            //         break;
+            //     case "error":
+            //         onMicOff();
+            //         alert(message.data);
+            //         console.log(message.data);
+            //         break;
+            // }
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
