@@ -1,9 +1,9 @@
 <template>
-<div id="wavesurfer"></div>
-<img v-bind:src="toggleImage" @click="onMicClick" style="width:5em;"/>
 <div>
     <span>uniqueId : {{ uniqueId }}</span>
 </div>
+<div id="wavesurfer"></div>
+<img v-bind:src="toggleImage" @click="onMicClick" style="width:5em;"/>
 </template>
 
 <script>
@@ -26,8 +26,8 @@ export default {
             container: "#wavesurfer",
             backgroundColor: "#c3c3ff",
             opacity: 0.8,
-            waveColor: "#ffffff",
-            progressColor: "#F8EA06",
+            waveColor: "black",
+            progressColor: "grey",
             cursorColor: "#FF6060",
             cursorWidth: 1,
             barRadius: 0,
@@ -35,7 +35,7 @@ export default {
             barHeight: 1,
             barGap: 1,
             barMinHeight: 0,
-            mediaControls: true,
+            mediaControls: false,
             fillParent: true,
             ignoreSilenceMode: true,
         });
