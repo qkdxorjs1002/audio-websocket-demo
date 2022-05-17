@@ -7,6 +7,7 @@ Websocket audio streaming demo
 ```plaintext
 node 16.x
 yarn 1.22.x
+vue/cli
 VSCode (Extensions-Volar/ESLint,,,)
 ```
 
