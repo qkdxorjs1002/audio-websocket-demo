@@ -64,5 +64,7 @@ export default class WavRepository {
         this.encoderWorker.postMessage({
             "event": "close"
         });
+        this.encoderWorker.terminate();
+        this.encoderWorker = null;
     }
 }

@@ -75,5 +75,6 @@ parentPort.on("message", (message) => {
     }
     else if (message.event === "close") {
         parentPort.close();
+        recorded = null;
     }
 });
