@@ -1,0 +1,3 @@
+[submodule "src/client/src/mixins/RecorderService.js"]
+	path = src/client/src/mixins/RecorderService.js
+	url = http://github.com/qkdxorjs1002/RecorderService.js

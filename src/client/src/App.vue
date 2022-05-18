@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import RecorderService from "./mixins/RecorderService/RecorderService.js";
+import RecorderService from "./mixins/RecorderService.js/src/RecorderService.js";
 import WaveSurfer from "wavesurfer.js";
 import { WSMessage, WSMessageAudioData } from "./models/ws_model.js";
 
