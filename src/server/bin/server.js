@@ -93,7 +93,7 @@ function onHTTPSError(error) {
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * Event listener for HTTPS server "listening" event.
  */
 function onHTTPSListening() {
   var addr = httpsServer.address();
@@ -105,6 +105,7 @@ function onHTTPSListening() {
 
 /**
  * onWSConnect
+ * Event listener for WSS Server "connection" event.
  * @param {WebSocket} ws 
  * @param {IncomingMessage} request 
  */
@@ -115,6 +116,7 @@ function onHTTPSListening() {
 
 /**
  * onWSClose
+ * Event listener for WSS Server "close" event.
  */
 function onWSClose() {
     console.log("WSServer: server closed")
@@ -122,6 +124,7 @@ function onWSClose() {
 
 /**
  * onWSError
+ * Event listener for WSS Server "error" event.
  * @param {Error} error 
  */
 function onWSError(error) {

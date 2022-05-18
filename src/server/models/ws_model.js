@@ -7,6 +7,7 @@ class WSMessage {
 
     /**
      * fromJson
+     * Parse and deserialize json data to object.
      * @param {Object} message 
      * @returns {WSMessage}
      */
@@ -22,7 +23,8 @@ class WSMessage {
 
     /**
      * toJson
-     * @returns {Object}
+     * Serialize data to json string.
+     * @returns {String}
      */
     toJson() {
         return JSON.stringify({
@@ -50,6 +52,7 @@ class WSMessageAudioData {
 
     /**
      * fromJson
+     * Parse and deserialize json data to object.
      * @param {Object} message 
      * @returns {WSMessageAudioData}
      */
@@ -68,7 +71,8 @@ class WSMessageAudioData {
 
     /**
      * toJson
-     * @returns {Object}
+     * Serialize data to json string.
+     * @returns {String}
      */
     toJson() {
         return JSON.stringify({
