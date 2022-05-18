@@ -109,17 +109,23 @@ export default {
 
             switch (message.event) {
                 case "ok":
-                    this.uniqueId = message.data.id;
-                    this.recorderService.record();
-                    this.setMicButtonIcon("on");
-                    this.isMicStreamStopped = false;
+                    this._onWSOkMessage(message);
                     break;
                 case "error":
-                    onMicOff();
-                    alert(message.data);
-                    console.log(message.data);
+                    this._onWSErrorMessage(message);
                     break;
             }
+        },
+        _onWSOkMessage(message) {
+            this.uniqueId = message.data.id;
+            this.recorderService.record();
+            this.setMicButtonIcon("on");
+            this.isMicStreamStopped = false;
+        },
+        _onWSErrorMessage(message) {
+            onMicOff();
+            alert(message.data);
+            console.log(message.data);
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
