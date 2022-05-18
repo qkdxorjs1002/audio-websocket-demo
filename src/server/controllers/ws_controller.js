@@ -8,90 +8,140 @@ export default class WSController {
 
     /**
      * onConnect
+     * Event listener for WSS Server "connection" event.
      * @param {WebSocket} ws 
      * @param {IncomingMessage} request 
      */
     onConnect(ws, request) {
         this.ws = ws;
+
+        // Add WebSocket listeners
         this.ws.addListener("message", (message) => this._onMessage(message));
         this.ws.addListener("close", () => this._onClose());
+
         this.remoteAddress = request.socket.remoteAddress;
         console.log("WSServer:", this.remoteAddress);
     }
     
     /**
      * _onClose
+     * Event listener for WebSocket "close" event.
      * @private
      */
     _onClose() { 
-        if (this.uuid) {
-            // dump wav
-            this.wavRepository.dump(this.uuid);
+        console.log("WSServer: websocket closed");
+
+        // Check conntection is inited
+        if (this.uuid == undefined) {
+            return;
         }
 
-        console.log("WSServer: websocket closed");
+        // Dump WAV file
+        this.wavRepository.dump(this.uuid);
     }
     
     /**
      * _onMessage
+     * Event listener for WebSocket "*" event.
      * @private
      * @param {Buffer} message 
      * @returns {void}
      */
     _onMessage(message) {
+        console.log("WSServer: Message from", this.remoteAddress);
+
         let wsMessage;
 
-        console.log("WSServer: Message from", this.remoteAddress);
-        
         try {
+            // Parse message with WSMessage model
             const json = JSON.parse(message.toString());
             wsMessage = WSMessage.fromJson(json);
         } catch (e) {
-            // send error message
+            // Send error message when failed to parse income message
             this._sendMessage("error", "invalid message");
             return;
         }
         
+        // Distinguish message type
         switch (wsMessage.event) {
             case "init":
-                this.uuid = randomUUID();
-                this.wavRepository = new WavRepository(16000, 16, 1);
-                this._sendMessage("ok", { id: this.uuid });
+                this._onInitMessage(wsMessage.data);
                 break;
             case "audio":
-                if (this.uuid == undefined) {
-                    this._sendMessage("error", "trigger init event first")
-                    break;
-                }
-                this._onBuffer(wsMessage.data);
+                this._onAudioMessage(wsMessage.data);
                 break;
             case "_DEV_TEST":
-                let buffer = new Float32Array(16000);
-                for (let i = 0; i < 16000; i++) {
-                    buffer[i] = Math.random() * 2 - 1;
-                }
-
-                this._onBuffer({
-                    "seq": 1,
-                    "size": 16000,
-                    "buffer": Buffer.from(buffer.buffer).toString("base64")
-                });
-
+                this._onDevTestMessage(wsMessage.data);
                 break;
         }
     }
 
-    /** _onBuffer
+    /** 
+     * _onInitMessage
+     * Event listener for WebSocket "*" event with "init" event message.
      * @private
      * @param {Object} data 
      */
-    _onBuffer(data) {
-        const wsMessageAudioData = WSMessageAudioData.fromJson(data);
+    _onInitMessage(data) {
+        // Generate UUID for uniqueId
+        this.uuid = randomUUID();
+        // Init WavRepository
+        this.wavRepository = new WavRepository(16000, 16, 1);
+        // Send response message with "ok" event
+        this._sendMessage("ok", { id: this.uuid });
+    }
+
+    /** 
+     * _onAudioMessage
+     * Event listener for WebSocket "*" event with "audio" event message.
+     * @private
+     * @param {Object} data 
+     */
+    _onAudioMessage(data) {
+        // Check conntection is inited
+        if (this.uuid == undefined) {
+            // Send error message with "error" event
+            this._sendMessage("error", "trigger init event first")
+            return;
+        }
+        let wsMessageAudioData;
+
+        try {
+            // Parse data with WSMessageAudioData model
+            wsMessageAudioData = WSMessageAudioData.fromJson(data);
+        } catch(e) {
+            // Send error message when failed to parse data
+            this._sendMessage("error", "invalid data message");
+            return;
+        }
+
+        // Encode data
         this.wavRepository.encode(new Float32Array(wsMessageAudioData.buffer));
+    }
+
+    /** 
+     * _onDevTestMessage
+     * Event listener for WebSocket "*" event with "_DEV_TEST" event message.
+     * @private
+     * @param {Object} data 
+     */
+    _onDevTestMessage(data) {
+        // Generate random noise
+        let buffer = new Float32Array(16000);
+        for (let i = 0; i < 16000; i++) {
+            buffer[i] = Math.random() * 2 - 1;
+        }
+
+        this._onBuffer({
+            "seq": 1,
+            "size": 16000,
+            "buffer": Buffer.from(buffer.buffer).toString("base64")
+        });
     }
 
     /**
      * _sendMessage
+     * Send WebSocket Message with Custom Model.
      * @private
      * @param {String} event 
      * @param {Object} message 
