@@ -42,24 +42,12 @@ export default {
         });
         this.wavesurfer.stop();
         
-        this.recorderService = new RecorderService({
-            broadcastAudioProcessEvents: true,
-            enableDynamicsCompressor: true,
-            noAudioWorklet: false,
-            micGain: 1.0,
-            outputGain: 1.0,
+        this.recorderService = RecorderService.createPreConfigured({
             bufferSize: 4096,
-            stopTracksAndCloseCtxWhenFinished: true,
-            usingMediaRecorder: false,
-            latencyHint: 'interactive',
             sampleRate: 16000,
-            debugging: true,
+            makeBlob: false,
             audioConstraints: {
-                channelCount: 1,
-                sampleRate: 16000,
-                autoGainControl: false,
-                echoCancellation: false,
-                noiseSuppression: false
+                sampleRate: 16000
             }
         });
 
