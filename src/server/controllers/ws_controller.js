@@ -18,8 +18,8 @@ export default class WSController {
         this.ws = ws;
 
         // Add WebSocket listeners
-        this.ws.addListener("message", (message) => this._onMessage(message));
-        this.ws.addListener("close", () => this._onClose());
+        this.ws.onmessage((message) => this._onMessage(message));
+        this.ws.onclose(() => this._onClose());
 
         this.remoteAddress = request.socket.remoteAddress;
         console.log("WSServer:", this.remoteAddress);
@@ -38,8 +38,9 @@ export default class WSController {
             return;
         }
 
-        // Dump WAV file
-        this.wavRepository.dump(this.uuid);
+        // Release resources
+        this.wavRepository.close();
+        this.wavRepository = null;
     }
     
     /**

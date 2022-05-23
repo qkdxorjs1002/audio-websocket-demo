@@ -3,6 +3,7 @@
 import { Worker, parentPort, workerData } from "worker_threads";
 import Encoder from "./encoder.js";
 import fs from "fs";
+import { exit } from "process";
 
 // Worker data
 const identifier = workerData.identifier;
@@ -19,15 +20,21 @@ let encoder = new Encoder({
  * onClose
  * Event listener for ParentPort "close" event.
  */
-function onClose() {
+async function onClose() {
+    console.log(process.memoryUsage());
+    console.log("EncoderWorker: dump wav before terminate worker")
+    await onDump();
     parentPort.close();
+    console.log("EncoderWorker: exited")
+    console.log(process.memoryUsage());
+    exit(0);
 }
 
 /**
  * onEncode
  * Event listener for ParentPort "encode" event.
  */
-function onEncode(data) {
+async function onEncode(data) {
     // Encode data
     encoder.encode(data);
 
@@ -36,17 +43,20 @@ function onEncode(data) {
     
     // Check chunk size
     if (encodedLength * bufferSize >= targetChunkSize) {
-        onDump();
+        onDump(encoder.accumulatedLength == 0);
     }
 }
 
 /**
  * onDump
  * Event listener for ParentPort "dump" event.
+ * @param {Boolean} writeAll write all of audio header and data
  */
-function onDump() {
+async function onDump(writeAll) {
+    console.log(process.memoryUsage());
+    console.log("EncoderWorker: writting wav file")
     let filePath = "./" + identifier + ".wav";
-    const fd = fs.openSync(filePath, "w");
+    const fd = fs.openSync(filePath, "a");
     // Make wav audio dump
     let dump = encoder.dump();
 
@@ -54,18 +64,21 @@ function onDump() {
     // NOTE: fd insert? overwrite?
     try {
         // Write RIFF header
-        fs.writeSync(fd, dump.header.riff, undefined, undefined, 0);
-        // Write fmt deader
-        fs.writeSync(fd, dump.header.fmt, undefined, undefined, 12);
+        fs.writeSync(fd, dump.header.riff, 0, dump.header.riff.length, 0);
+        // Write fmt header
+        if (writeAll) {
+            fs.writeSync(fd, dump.header.fmt, 0, dump.header.fmt.length, 12);
+        }
         // Write data header
-        fs.writeSync(fd, dump.header.data, undefined, undefined, 36);
+        fs.writeSync(fd, dump.header.data, 0, dump.header.data.length, 36);
+        // Write data chunk
+        fs.appendFileSync(fd, dump.data);
         // Close file descriptor
         fs.closeSync(fd);
-        // Write data chunk
-        fs.appendFileSync(filePath, dump.data);
     } catch (e) {
         console.log("EncoderWorker: failed to write data into file");
     }
+    console.log(process.memoryUsage());
 }
 
 // Init parentPort event listener

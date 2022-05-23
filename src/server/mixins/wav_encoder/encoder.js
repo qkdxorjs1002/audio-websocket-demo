@@ -27,6 +27,7 @@ export default class Encoder {
      * @param {Float32Array} buffer 
      */
     encode(buffer) {
+        console.log(process.memoryUsage());
         let length = buffer.length;
         let data = new Uint8Array(length * this.BYTES_PER_SAMPLE);
         for (let i = 0; i < length; i++) {
@@ -43,6 +44,7 @@ export default class Encoder {
             data[index + 1] = sample >> 8;
         }
         this.encoded.push(data);
+        console.log(process.memoryUsage());
     }
 
     /**

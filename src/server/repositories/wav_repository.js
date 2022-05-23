@@ -17,23 +17,11 @@ export default class WavRepository {
                 sampleRate: 16000,
                 bitsPerSample: 16,
                 channelCount: 1,
-                targetChunkSize: 16384 * 10,
+                targetChunkSize: 16384 * 20,
                 identifier: identifier
             }
         });
-        this.encoderWorker.on("message", (data) => this._onMessage(data));
         console.log("WavRepository: spawn encoder worker");
-    }
-
-    /**
-     * _onMessage
-     * Event listener for Worker "*" event.
-     * @private
-     * @param {ArrayBuffer} data 
-     */
-    _onMessage(data) {
-        console.log(data[0]);
-        this.close();
     }
 
     /**
@@ -54,6 +42,7 @@ export default class WavRepository {
      * @param {String} identifier
      */
     dump() {
+        console.log("WavRepository: send dump event to encoder worker");
         this.encoderWorker.postMessage({
             "event": "dump"
         });
@@ -64,10 +53,10 @@ export default class WavRepository {
      * Post a message with "close" event to close MessagePort and termiate Worker.
      */
     close() {
+        console.log("WavRepository: send close event to encoder worker");
         this.encoderWorker.postMessage({
             "event": "close"
         });
-        this.encoderWorker.terminate();
         this.encoderWorker = null;
     }
 }
