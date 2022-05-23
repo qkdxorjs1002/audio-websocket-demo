@@ -39,7 +39,7 @@ class WSMessage {
 class WSMessageAudioData {
 
     /**
-     * 
+     * WSMessageAudioData
      * @param {Number} seq 
      * @param {Number} size 
      * @param {ArrayBuffer} buffer 
