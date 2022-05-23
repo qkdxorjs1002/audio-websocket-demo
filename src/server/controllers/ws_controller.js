@@ -1,3 +1,5 @@
+"use strict";
+
 import { randomUUID } from "crypto";
 import { WSMessage, WSMessageAudioData } from "../models/ws_model.js";
 import WavRepository from "../repositories/wav_repository.js";

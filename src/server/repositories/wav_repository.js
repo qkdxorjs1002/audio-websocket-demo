@@ -1,3 +1,5 @@
+"use strict";
+
 import { Worker } from "worker_threads";
 
 export default class WavRepository {

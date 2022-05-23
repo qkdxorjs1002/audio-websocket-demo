@@ -1,3 +1,5 @@
+"use strict";
+
 import { Worker, parentPort, workerData } from "worker_threads";
 import Encoder from "./encoder.js";
 import fs from "fs";
