@@ -20,7 +20,8 @@ app.set("port", port);
  */
 const options = {
     key: fs.readFileSync("../cert/pr.pem"),
-    cert: fs.readFileSync("../cert/cert.pem")
+    cert: fs.readFileSync("../cert/cert.pem"),
+    rejectUnauthorized: false
 };
 
 /**
