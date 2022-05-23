@@ -1,17 +1,26 @@
 import { Worker } from "worker_threads";
-import * as fs from "fs";
 
 export default class WavRepository {
 
-    constructor(sampleRate, bit, channels) {
-        this.sampleRate = sampleRate;
-        this.bit = bit;
-        this.channels = channels;
+    /**
+     * WavRepository
+     * @param {String} identifier
+     */
+    constructor(identifier) {
+        this.identifier = identifier;
 
         // Spawn encoder worker
-        console.log("WavRepository: spawn encoder worker");
-        this.encoderWorker = new Worker("./mixins/encoder-wav-worker.js");
+        this.encoderWorker = new Worker("./mixins/wav_encoder/worker.js", {
+            workerData: {
+                sampleRate: 16000,
+                bitsPerSample: 16,
+                channelCount: 1,
+                targetChunkSize: 16384 * 10,
+                identifier: identifier
+            }
+        });
         this.encoderWorker.on("message", (data) => this._onMessage(data));
+        console.log("WavRepository: spawn encoder worker");
     }
 
     /**
@@ -21,24 +30,8 @@ export default class WavRepository {
      * @param {ArrayBuffer} data 
      */
     _onMessage(data) {
-        // File path for local wav data
-        const filePath = this.identifier + ".wav";
-
-        // Check file is exist
-        if (fs.existsSync(filePath)) {
-            console.log("WavRepository: file", filePath, "is exist");
-        }
-
-        // Create audio file
-        new Promise(() => {
-            // Write down WAV data as file
-            console.log("WavRepository: write audio file", filePath);
-            fs.writeFileSync(filePath, Buffer.from(new Uint8Array(data[0])), "binary");
-
-            // Close and terminate worker
-            console.log("WavRepository: terminate encoder worker");
-            this.close();
-        });
+        console.log(data[0]);
+        this.close();
     }
 
     /**
@@ -58,12 +51,10 @@ export default class WavRepository {
      * Post a message with "dump" event.
      * @param {String} identifier
      */
-    dump(identifier) {
+    dump() {
         this.encoderWorker.postMessage({
-            "event": "dump",
-            "data": this.sampleRate
+            "event": "dump"
         });
-        this.identifier = identifier;
     }
 
     /**

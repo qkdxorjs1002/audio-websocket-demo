@@ -86,7 +86,7 @@ export default class WSController {
         // Generate UUID for uniqueId
         this.uuid = randomUUID();
         // Init WavRepository
-        this.wavRepository = new WavRepository(16000, 16, 1);
+        this.wavRepository = new WavRepository(this.uuid);
         // Send response message with "ok" event
         this._sendMessage("ok", { id: this.uuid });
     }
