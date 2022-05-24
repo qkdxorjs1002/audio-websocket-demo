@@ -111,7 +111,7 @@ export default {
             this.isMicStreamStopped = false;
         },
         _onWSErrorMessage(message) {
-            onMicOff();
+            this.onMicOff();
             alert(message.data);
             console.log(message.data);
         },
