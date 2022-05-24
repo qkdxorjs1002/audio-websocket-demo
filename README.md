@@ -1,5 +1,7 @@
 # audio-websocket-demo
 
+![WSDiagram](./doc/img/WS_diagram.png)
+
 Websocket audio streaming demo
 
 ## Memory Diagnose
