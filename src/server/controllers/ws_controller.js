@@ -41,6 +41,7 @@ export default class WSController {
         // Release resources
         this.wavRepository.close();
         this.wavRepository = null;
+        this.ws = null;
     }
     
     /**
