@@ -90,7 +90,7 @@ export default {
             this.webSocketClient.send((new WSMessage("init")).toJson());
         },
         onWSClosed(event) {
-            this.webSocketClient = null;
+            this.onMicOff();
         },
         onWSMessage(event) {
             let message = WSMessage.fromJson(event.data);
