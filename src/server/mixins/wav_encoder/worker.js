@@ -21,12 +21,10 @@ let encoder = new Encoder({
  * Event listener for ParentPort "close" event.
  */
 async function onClose() {
-    console.log(process.memoryUsage());
     console.log("EncoderWorker: dump wav before terminate worker")
     await onDump();
     parentPort.close();
     console.log("EncoderWorker: exited")
-    console.log(process.memoryUsage());
     exit(0);
 }
 
@@ -53,7 +51,6 @@ async function onEncode(data) {
  * @param {Boolean} writeAll write all of audio header and data
  */
 async function onDump(writeAll) {
-    console.log(process.memoryUsage());
     console.log("EncoderWorker: writting wav file")
     let filePath = "./" + identifier + ".wav";
     const fd = fs.openSync(filePath, "a");
@@ -61,7 +58,6 @@ async function onDump(writeAll) {
     let dump = encoder.dump();
 
     // Write buffers on file
-    // NOTE: fd insert? overwrite?
     try {
         // Write RIFF header
         fs.writeSync(fd, dump.header.riff, 0, dump.header.riff.length, 0);
@@ -78,7 +74,6 @@ async function onDump(writeAll) {
     } catch (e) {
         console.log("EncoderWorker: failed to write data into file");
     }
-    console.log(process.memoryUsage());
 }
 
 // Init parentPort event listener

@@ -42,7 +42,6 @@ export default class WavRepository {
      * @param {String} identifier
      */
     dump() {
-        console.log("WavRepository: send dump event to encoder worker");
         this.encoderWorker.postMessage({
             "event": "dump"
         });
@@ -53,7 +52,6 @@ export default class WavRepository {
      * Post a message with "close" event to close MessagePort and termiate Worker.
      */
     close() {
-        console.log("WavRepository: send close event to encoder worker");
         this.encoderWorker.postMessage({
             "event": "close"
         });
