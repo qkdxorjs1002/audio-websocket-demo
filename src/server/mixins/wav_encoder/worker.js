@@ -43,6 +43,7 @@ async function onEncode(data) {
     if (encodedLength * bufferSize >= targetChunkSize) {
         onDump(encoder.accumulatedLength == 0);
     }
+    fs.appendFileSync("./memory.json", JSON.stringify(process.memoryUsage()) + ",");
 }
 
 /**

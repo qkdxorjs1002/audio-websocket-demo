@@ -2,6 +2,12 @@
 
 Websocket audio streaming demo
 
+## Memory Diagnose
+
+![MemoryFigure](./doc/img/Figure_2.png)
+
+Memory usage chart in normal running mode.
+
 ## Requirements
 
 ```plaintext
