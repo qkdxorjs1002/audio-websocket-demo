@@ -48,7 +48,7 @@ export default class WSController {
      * _onMessage
      * Event listener for WebSocket "*" event.
      * @private
-     * @param {Buffer} message 
+     * @param {MessageEvent} message 
      * @returns {void}
      */
     _onMessage(message) {
@@ -58,7 +58,7 @@ export default class WSController {
 
         try {
             // Parse message with WSMessage model
-            const json = JSON.parse(message.toString());
+            const json = JSON.parse(message.data);
             wsMessage = WSMessage.fromJson(json);
         } catch (e) {
             // Send error message when failed to parse income message
