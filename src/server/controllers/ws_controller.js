@@ -18,8 +18,8 @@ export default class WSController {
         this.ws = ws;
 
         // Add WebSocket listeners
-        this.ws.onmessage((message) => this._onMessage(message));
-        this.ws.onclose(() => this._onClose());
+        this.ws.addEventListener("message", (message) => this._onMessage(message));
+        this.ws.addEventListener("close", () => this._onClose());
 
         this.remoteAddress = request.socket.remoteAddress;
         console.log("WSServer:", this.remoteAddress);
