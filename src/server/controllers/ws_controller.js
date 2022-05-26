@@ -6,22 +6,28 @@ import WavRepository from "../repositories/wav_repository.js";
 
 export default class WSController {
 
-    constructor() {}
-
     /**
-     * onConnect
-     * Event listener for WSS Server "connection" event.
+     * WSController
      * @param {WebSocket} ws 
      * @param {IncomingMessage} request 
      */
-    onConnect(ws, request) {
+    constructor(ws, request) {
         this.ws = ws;
-
+        this.request = request;
+        this._onConnect();
+    }
+    
+    /**
+     * _onConnect
+     * Event listener for WSS Server "connection" event.
+     * @private
+     */
+    _onConnect() {
         // Add WebSocket listeners
         this.ws.addEventListener("message", (message) => this._onMessage(message));
         this.ws.addEventListener("close", () => this._onClose());
 
-        this.remoteAddress = request.socket.remoteAddress;
+        this.remoteAddress = this.request.socket.remoteAddress;
         console.log("WSServer:", this.remoteAddress);
     }
     

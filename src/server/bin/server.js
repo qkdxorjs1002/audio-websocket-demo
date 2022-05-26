@@ -113,7 +113,7 @@ function onHTTPSListening() {
  */
  function onWSConnect(ws, request) {
     console.log("WSServer: websocket connected")
-    new wsEntry().onConnect(ws, request);
+    new wsEntry(ws, request);
 }
 
 /**
