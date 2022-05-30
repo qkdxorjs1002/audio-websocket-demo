@@ -63,7 +63,7 @@ export default {
             // check user stop mic streaming
             if (this.isMicStreamStopped) {    
                 this.recorderService.stop();
-                this.webSocketClient.close();
+                this.webSocketClient.send(new WSMessage("close").toJson());
                 this.setMicButtonIcon("off");
             }
         });
@@ -97,23 +97,30 @@ export default {
 
             switch (message.event) {
                 case "ok":
-                    this._onWSOkMessage(message);
+                    this._onWSOkMessage(message.data);
                     break;
                 case "error":
-                    this._onWSErrorMessage(message);
+                    this._onWSErrorMessage(message.data);
+                    break;
+                case "close":
+                    this._onWSCloseMEssage(message.data);
                     break;
             }
         },
-        _onWSOkMessage(message) {
-            this.uniqueId = message.data.id;
+        _onWSOkMessage(data) {
+            this.uniqueId = data.id;
             this.recorderService.record();
             this.setMicButtonIcon("on");
             this.isMicStreamStopped = false;
         },
-        _onWSErrorMessage(message) {
+        _onWSErrorMessage(data) {
             this.onMicOff();
-            alert(message.data);
-            console.log(message.data);
+            alert(data.error);
+            console.log(data.error);
+        },
+        _onWSCloseMEssage(data) {
+            this.webSocketClient.close();
+            this.webSocketClient = null;
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
