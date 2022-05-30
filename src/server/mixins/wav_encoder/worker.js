@@ -1,12 +1,12 @@
 "use strict";
 
-import { Worker, parentPort, workerData } from "worker_threads";
+import { parentPort, workerData } from "worker_threads";
 import Encoder from "./encoder.js";
 import fs from "fs";
 import { exit } from "process";
 
 // Worker data
-const identifier = workerData.identifier;
+const filePath = workerData.filePath;
 const targetChunkSize = workerData.targetChunkSize;
 
 // Init encoder
@@ -21,20 +21,23 @@ let encoder = new Encoder({
  * Event listener for ParentPort "close" event.
  */
 async function onClose() {
-    console.log("EncoderWorker: dump wav before terminate worker")
-    await onDump();
     parentPort.close();
-    console.log("EncoderWorker: exited")
     exit(0);
 }
 
 /**
  * onEncode
  * Event listener for ParentPort "encode" event.
+ * @param {Float32Array} data
  */
 async function onEncode(data) {
     // Encode data
-    encoder.encode(data);
+    try {
+        encoder.encode(data);
+    } catch (e) {
+        error("Failed to encode buffer", e);
+        return;
+    }
 
     let encodedLength = encoder.encoded.length;
     let bufferSize = encodedLength > 0 ? encoder.encoded[0].length : 0;
@@ -49,14 +52,19 @@ async function onEncode(data) {
 /**
  * onDump
  * Event listener for ParentPort "dump" event.
- * @param {Boolean} writeAll write all of audio header and data
+ * @param {Boolean | null} writeAll write all of audio header and data
  */
 async function onDump(writeAll) {
-    console.log("EncoderWorker: writting wav file")
-    let filePath = "./" + identifier + ".wav";
+    console.info("EncoderWorker: writting wav file")
     const fd = fs.openSync(filePath, "a");
     // Make wav audio dump
-    let dump = encoder.dump();
+    let dump;
+    try {
+        dump = encoder.dump();
+    } catch (e) {
+        error("Failed to dump encoded data", e);
+        return;
+    }
 
     // Write buffers on file
     try {
@@ -73,7 +81,40 @@ async function onDump(writeAll) {
         // Close file descriptor
         fs.closeSync(fd);
     } catch (e) {
-        console.log("EncoderWorker: failed to write data into file");
+        error("Failed to write data into file", e);
+        return;
+    }
+}
+
+/**
+ * error
+ * Send error message to ParentPort
+ * @param {String} message 
+ * @param {Error} err 
+ */
+function error(message, err) {
+    const _error = new WorkerError(message, err);
+    console.error(_error);
+    parentPort.postMessage(_error);
+}
+
+/**
+ * WorkerError
+ * Error class
+ */
+class WorkerError extends Error {
+    
+    /**
+     * WorkerError
+     * @param {String} message
+     * @param {...any} args 
+     */
+    constructor(message,...args) {
+        super(...args);
+        this.code = "ERR_WORKER";
+        this.name = "WorkerError";
+        this.message = message;
+        this.stack = `${this.message}\n${new Error().stack}`;
     }
 }
 

@@ -112,7 +112,7 @@ function onHTTPSListening() {
  * @param {IncomingMessage} request 
  */
  function onWSConnect(ws, request) {
-    console.log("WSServer: websocket connected")
+    console.info("WSServer: websocket connected");
     new wsEntry(ws, request);
 }
 
@@ -121,7 +121,7 @@ function onHTTPSListening() {
  * Event listener for WSS Server "close" event.
  */
 function onWSClose() {
-    console.log("WSServer: server closed")
+    console.info("WSServer: server closed");
 }
 
 /**
@@ -130,7 +130,7 @@ function onWSClose() {
  * @param {Error} error 
  */
 function onWSError(error) {
-    console.log("WSServer: websocket error occured")
+    console.error("WSServer:", error);
 }
 
-console.log("Server is running.")
+console.info("Server is running.")
