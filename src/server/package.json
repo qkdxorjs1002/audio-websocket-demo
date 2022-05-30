@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node ./bin/server"
+    "start": "node ./bin/server",
+    "test": "yarn mocha"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -13,5 +14,8 @@
     "morgan": "~1.9.1",
     "ws": "^8.6.0"
   },
-  "packageManager": "yarn@3.2.0"
+  "packageManager": "yarn@3.2.0",
+  "devDependencies": {
+    "mocha": "^10.0.0"
+  }
 }
