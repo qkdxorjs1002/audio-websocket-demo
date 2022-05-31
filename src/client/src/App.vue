@@ -90,6 +90,7 @@ export default {
             this.webSocketClient.send((new WSMessage("init")).toJson());
         },
         onWSClosed(event) {
+            this.webSocketClient = null;
             this.onMicOff();
         },
         onWSMessage(event) {
@@ -120,7 +121,6 @@ export default {
         },
         _onWSCloseMEssage(data) {
             this.webSocketClient.close();
-            this.webSocketClient = null;
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
