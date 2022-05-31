@@ -9,6 +9,7 @@ import debug from "debug";
 import { createServer } from "https";
 import { WebSocketServer } from "ws";
 import * as fs from "fs";
+import { randomUUID } from "crypto";
 
 /**
  * Get port from environment and store in Express.
@@ -132,5 +133,16 @@ function onWSClose() {
 function onWSError(error) {
     console.error("WSServer:", error);
 }
+
+// Logging memory usage
+const logPath = "./memory.json";
+
+if (fs.existsSync(logPath)) {
+    fs.renameSync(logPath, `./memory_${randomUUID()}.json`);
+}
+
+setInterval(() => {
+    fs.appendFileSync(logPath, JSON.stringify(process.memoryUsage()) + ",");
+}, 1000);
 
 console.info("Server is running.")
