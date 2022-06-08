@@ -23,6 +23,10 @@ export class WSMessage {
                 ? JSON.parse(message)
                 : message;
 
+            if (json.event == null) {
+                throw SyntaxError();
+            }
+
             return new WSMessage(
                 json.event, json.data
             );
@@ -33,7 +37,7 @@ export class WSMessage {
                 _message = "Invalid syntax of message";
             } else {
                 // Unhandled error message
-                _message = "Unhandled error - " + e.toString();
+                _message = `Unhandled error - ${e.message}`;
             }
             // Send error message
             throw new WSMessageError(_message, e);
@@ -59,12 +63,10 @@ export class WSMessageAudioData {
 
     /**
      * WSMessageAudioData
-     * @param {Number} seq 
      * @param {Number} size 
      * @param {ArrayBuffer} buffer 
      */
-    constructor(seq, size, buffer) {
-        this.seq = seq;
+    constructor(size, buffer) {
         this.size = size;
         this.buffer = buffer;
     }
@@ -83,7 +85,7 @@ export class WSMessageAudioData {
                 : message;
 
             return new WSMessageAudioData(
-                json.seq, json.size, 
+                json.size, 
                 (typeof Buffer !== "undefined")
                     ? Buffer.from(json.buffer, "base64").buffer
                     : Uint8Array.fromCharCode(atob(json.buffer))
@@ -95,7 +97,7 @@ export class WSMessageAudioData {
                 _message = "Invalid syntax of message";
             } else {
                 // Unhandled error message
-                _message = "Unhandled error - " + e.toString();
+                _message = `Unhandled error - ${e.message}`;
             }
             // Send error message
             throw new WSMessageError(_message, e);
@@ -109,7 +111,6 @@ export class WSMessageAudioData {
      */
     toJson() {
         return JSON.stringify({
-            seq: this.seq,
             size: this.size,
             buffer: (typeof Buffer !== "undefined") 
                 ? Buffer.from(this.buffer).toString("base64")
@@ -122,7 +123,7 @@ export class WSMessageAudioData {
  * WSMessageError
  * Error class
  */
-export class WSMessageError extends Error {
+class WSMessageError extends Error {
     
     /**
      * WSMessageError
@@ -135,18 +136,5 @@ export class WSMessageError extends Error {
         this.name = "WSMessageError";
         this.message = message;
         this.stack = `${this.message}\n${new Error().stack}`;
-    }
-
-    /**
-     * toJson
-     * Serialize data to json string.
-     * @returns {String}
-     */
-    toJson() {
-        return JSON.stringify({
-            code: this.code,
-            name: this.name,
-            stack: this.stack
-        });
     }
 }
