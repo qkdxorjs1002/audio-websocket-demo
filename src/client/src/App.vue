@@ -1,6 +1,7 @@
 <template>
 <div>
-    <span>uniqueId : {{ uniqueId }}</span>
+    <span>uniqueId : {{ uniqueId }}</span><br/>
+    <span>blobUrl : {{ blobUrl }}</span>
 </div>
 <div id="wavesurfer"></div>
 <img v-bind:src="toggleImage" @click="onMicClick" style="width:5em;"/>
@@ -16,7 +17,8 @@ export default {
     data() {
         return { 
             toggleImage: "mic-off.svg" ,
-            uniqueId: "null"
+            uniqueId: "null",
+            blobUrl: ""
         }
     },
     mounted() {
@@ -44,11 +46,7 @@ export default {
         
         this.recorderService = RecorderService.createPreConfigured({
             bufferSize: 4096,
-            sampleRate: 16000,
-            makeBlob: false,
-            audioConstraints: {
-                sampleRate: 16000
-            }
+            makeBlob: false
         });
 
         this.recorderService.em.addEventListener("onaudioprocess", (event) => {
@@ -56,7 +54,7 @@ export default {
             // send audio message
             let message = (new WSMessage(
                 "audio", 
-                new WSMessageAudioData(0, 0, event.detail.buffer.getChannelData(0).buffer)
+                new WSMessageAudioData(0, event.detail.buffer.getChannelData(0).buffer)
             )).toJson();
             this.webSocketClient.send(message);
             
@@ -66,6 +64,10 @@ export default {
                 this.webSocketClient.send(new WSMessage("close").toJson());
                 this.setMicButtonIcon("off");
             }
+        });
+
+        this.recorderService.em.addEventListener("recorded", (event) => {
+            this.setBlobUrl(event.detail.recorded.blobUrl);
         });
     },
     methods: {
@@ -124,6 +126,9 @@ export default {
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
+        },
+        setBlobUrl(blobUrl) {
+            this.blobUrl = blobUrl;
         }
     },
 };
