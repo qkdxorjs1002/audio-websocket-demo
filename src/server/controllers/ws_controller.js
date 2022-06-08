@@ -26,7 +26,6 @@ export default class WSController {
         // Add WebSocket listeners
         this.ws.addEventListener("message", (message) => this._onMessage(message));
         this.ws.addEventListener("close", () => this._onClose());
-
         this.remoteAddress = this.request.socket.remoteAddress;
         console.info("WSServer:", this.remoteAddress);
     }
@@ -37,6 +36,10 @@ export default class WSController {
      * @private
      */
     _onClose() { 
+        // on unexpected close
+        if (this.wavRepository != null) {
+            this.wavRepository.close();
+        }
         console.info("WSServer: websocket closed");
     }
     
@@ -49,15 +52,18 @@ export default class WSController {
      */
     _onMessage(message) {
         console.info("WSServer: Message from", this.remoteAddress);
-
+        const eventList = ["init", "audio", "close"];
+        
         let wsMessage;
         try {
             // Parse message with WSMessage model
             wsMessage = WSMessage.fromJson(message.data);
+            if (eventList.find((value) => value === wsMessage.event).length == 0) {
+                throw new WSControllerError("Invalid event");
+            }
         } catch (e) {
             // Send error message with "error" event
-            console.error(e);
-            this._sendMessage("error", { error: e.toString() });
+            this._sendErrorMessage(e);
 
             return;
         }
@@ -103,9 +109,8 @@ export default class WSController {
         // Check conntection is inited
         if (this.uuid == undefined) {
             // Send error message with "error" event
-            const _error = new WSControllerError("Connection is established but not inited", e);
-            console.error(_error);
-            this._sendMessage("error", { error: _error.toString() });
+            const _error = new WSControllerError("Connection is established but not inited");
+            this._sendErrorMessage(_error);
             return;
         }
 
@@ -115,8 +120,7 @@ export default class WSController {
             wsMessageAudioData = WSMessageAudioData.fromJson(data);
         } catch(e) {
             // Send error message with "error" event
-            console.error(e);
-            this._sendMessage("error", { error: e.toString() });
+            this._sendErrorMessage(e);
 
             return;
         }
@@ -130,12 +134,13 @@ export default class WSController {
      * Event listener for WebSocket "*" event with "close" event message.
      */
     _onCloseMessage(data) {
+        console.info("WSServer: close request from client");
+
         // Check conntection is inited
         if (this.uuid == undefined) {
             return;
         }
 
-        this.wavRepository.dump();
         this.wavRepository.close();
     }
 
@@ -145,7 +150,7 @@ export default class WSController {
      * @param {Error} error 
      */
      _onWRError(error) {
-        this._sendMessage("error", { error: error.toString() });
+        this._sendErrorMessage(error);
     }
 
     /**
@@ -165,10 +170,20 @@ export default class WSController {
      * Send WebSocket Message with Custom Model.
      * @private
      * @param {String} event 
-     * @param {string | ArrayBufferLike | Blob | ArrayBufferView} message 
+     * @param {String | ArrayBufferLike | Blob | ArrayBufferView} message 
      */
     _sendMessage(event, message) {
         this.ws.send(new WSMessage(event, message).toJson());
+    }
+
+    /**
+     * _sendErrorMessage
+     * Send WebSocket Error Message with Custom Model.
+     * @private
+     * @param {String | ArrayBufferLike | Blob | ArrayBufferView} message 
+     */
+    _sendErrorMessage(message) {
+        this._sendMessage("error", message);
     }
 
 }

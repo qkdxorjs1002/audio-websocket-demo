@@ -61,6 +61,7 @@ export default class WavRepository extends EventEmitter {
      * Post a message with "close" event to close MessagePort and exit Worker.
      */
     close() {
+        this.dump();
         if (this.encoderWorker) {
             this.encoderWorker.postMessage({
                 "event": "close"

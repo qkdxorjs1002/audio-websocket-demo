@@ -54,7 +54,7 @@ async function onEncode(data) {
  * @param {Boolean | null} writeAll write all of audio header and data
  */
 async function onDump(writeAll) {
-    console.info("EncoderWorker: writting wav file")
+    console.info("EncoderWorker: writting wav file");
     const fd = fs.openSync(filePath, "a");
     // Make wav audio dump
     let dump;
@@ -127,7 +127,7 @@ parentPort.on("message", (message) => {
             onEncode(message.data);
             break;
         case "dump":
-            onDump();
+            onDump(encoder.accumulatedLength == 0);
             break;
     }
 });
