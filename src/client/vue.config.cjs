@@ -8,8 +8,10 @@ module.exports = defineConfig({
     transpileDependencies: true,
     devServer: {
         https: {
-            key: fs.readFileSync("../cert/pr.pem"),
-            cert: fs.readFileSync("../cert/cert.pem")
+            ca: fs.readFileSync("../cert/rootca.crt"),
+            key: fs.readFileSync("../cert/ssl.key"),
+            cert: fs.readFileSync("../cert/ssl.crt"),
+            rejectUnauthorized: false
         }
     }
 })
