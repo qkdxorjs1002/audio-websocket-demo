@@ -118,15 +118,12 @@ export default class WSController {
         try {
             // Parse data with WSMessageAudioData model
             wsMessageAudioData = WSMessageAudioData.fromJson(data);
+            // Encode data
+            this.wavRepository.encode(new Float32Array(wsMessageAudioData.buffer));
         } catch(e) {
             // Send error message with "error" event
             this._sendErrorMessage(e);
-
-            return;
         }
-
-        // Encode data
-        this.wavRepository.encode(new Float32Array(wsMessageAudioData.buffer));
     }
 
     /**
