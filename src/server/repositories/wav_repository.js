@@ -85,7 +85,7 @@ export default class WavRepository extends EventEmitter {
      * _onExit
      * Event listener for WorkerPort "exit" event
      */
-     _onExit() {
+    _onExit() {
         this.emit("close");
     }
     

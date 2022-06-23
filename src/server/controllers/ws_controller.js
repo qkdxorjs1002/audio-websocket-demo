@@ -12,6 +12,12 @@ export default class WSController {
      * @param {IncomingMessage} request 
      */
     constructor(ws, request) {
+        /**
+         * @TODO - Improvement - Manage step with state [ connected -> inited -> closed ]
+         * connected -> init, close(unexpectly), close(expectly)
+         * inited    -> audio, close(unexpectly), close(expectly)
+         * closed    -> close(unexpectly), close(expectly)
+         */
         this.ws = ws;
         this.request = request;
         this._onConnect();
@@ -36,11 +42,13 @@ export default class WSController {
      * @private
      */
     _onClose() { 
-        // on unexpected close
-        if (this.wavRepository != null) {
-            this.wavRepository.close();
+        if (this.wavRepository == null || this.uuid == undefined) {
+            // on expected close
+            return;
         }
-        console.info("WSServer: websocket closed");
+    
+        // on unexpected close
+        this.wavRepository.close();
     }
     
     /**
@@ -58,11 +66,12 @@ export default class WSController {
         try {
             // Parse message with WSMessage model
             wsMessage = WSMessage.fromJson(message.data);
-            if (eventList.find((value) => value === wsMessage.event).length == 0) {
+            if (!eventList.find((value) => value === wsMessage.event)) {
                 throw new WSControllerError("Invalid event");
             }
         } catch (e) {
             // Send error message with "error" event
+            //@TODO - Need fix - message and stackTrace from WSMessageError is not accesible
             this._sendErrorMessage(e);
 
             return;
@@ -133,11 +142,11 @@ export default class WSController {
     _onCloseMessage(data) {
         console.info("WSServer: close request from client");
 
-        // Check conntection is inited
-        if (this.uuid == undefined) {
+        if (this.wavRepository == null || this.uuid == undefined) {
+            this._sendMessage('close');
             return;
         }
-
+    
         this.wavRepository.close();
     }
 
@@ -159,6 +168,7 @@ export default class WSController {
 
         // Release resources
         this.wavRepository = null;
+        this.uuid = null;
         this.ws = null;
     }
 
@@ -180,6 +190,7 @@ export default class WSController {
      * @param {String | ArrayBufferLike | Blob | ArrayBufferView} message 
      */
     _sendErrorMessage(message) {
+        console.error(message);
         this._sendMessage("error", message);
     }
 
