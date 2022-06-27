@@ -25,40 +25,16 @@ export default {
     },
     created() {
         this.isMicStreamStopped = true;
-        
+
         this.recorderService = RecorderService.createPreConfigured({
-            bufferSize: 4096,
+            bufferSize: 13,
             makeBlob: true,
-            audioProcessor: "./RecorderService.js/AudioProcessor.js"
+            audioProcessor: "./RecorderService.js/AudioProcessor.js",
+            debug: true,
         });
 
-        this.recorderService.em.addEventListener("onaudioprocess", (event) => {
-            let buffer = event.detail.buffer;
-
-            this.wavesurfer.loadDecodedBuffer(buffer);
-            // send audio message
-            let message = (new WSMessage(
-                "audio", 
-                new WSMessageAudioData(0, buffer.getChannelData(0).buffer)
-            )).toJson();
-            this.webSocketClient.send(message);
-            
-            // check user stop mic streaming
-            if (this.isMicStreamStopped) {    
-                this.recorderService.stop();
-                this.webSocketClient.send(new WSMessage("close").toJson());
-                this.setMicButtonIcon("off");
-            }
-        });
-
-        this.recorderService.em.addEventListener("recorded", (event) => {
-            this.setBlobUrl(event.detail.recorded.blobUrl);
-
-            this.wavesurfer.on('ready', () => {
-                this.wavesurfer.play();
-            });
-            this.wavesurfer.load(event.detail.recorded.blobUrl);
-        });
+        this.recorderService.em.addEventListener("onaudioprocess", this.onAudioProcess);
+        this.recorderService.em.addEventListener("recorded", this.onRecorded);
     },
     mounted() {
         this.wavesurfer = WaveSurfer.create({
@@ -89,21 +65,15 @@ export default {
     methods: {
         onMicClick() {
             if (this.isMicStreamStopped) {
-                this.onMicOn();
+                this.webSocketClient = new WebSocket("wss://192.168.50.177:3000/");
+                //@NOTE WebSocket EventListener에 오래 실행되는 코드 실행하지 말 것 -> 실행에 지연 생김
+                this.webSocketClient.addEventListener("open", this.onWSConnected);
+                this.webSocketClient.addEventListener("close", this.onWSClosed);
+                this.webSocketClient.addEventListener("message", this.onWSMessage);
+                this.recorderService.record();
             } else {
-                this.onMicOff();
+                this.isMicStreamStopped = true;
             }
-        },
-        onMicOn() {
-            this.wavesurfer.un('ready');
-            // send init message
-            this.webSocketClient = new WebSocket("wss://192.168.50.177:3000/");
-            this.webSocketClient.onopen = (event) => this.onWSConnected(event);
-            this.webSocketClient.onclose = (event) => this.onWSClosed(event);
-            this.webSocketClient.onmessage = (event) => this.onWSMessage(event);
-        },
-        onMicOff() {
-            this.isMicStreamStopped = true;
         },
         setMicButtonIcon(state) {
             this.toggleImage = (state === "on") ? "mic-on.svg" : "mic-off.svg";
@@ -111,12 +81,43 @@ export default {
         setBlobUrl(blobUrl) {
             this.blobUrl = blobUrl;
         },
+        onAudioProcess(event) {
+            let audioBuffer = event.detail.audioBuffer;
+            let arrayBuffer = event.detail.arrayBuffer;
+
+            this.wavesurfer.loadDecodedBuffer(audioBuffer);
+
+            if (this.isMicStreamStopped) {
+                // send audio message
+                let message = (new WSMessage(
+                    "audio", 
+                    new WSMessageAudioData(0, arrayBuffer.buffer)
+                )).toJson();
+                this.webSocketClient.send(message);
+            }
+            
+            // check user stop mic streaming
+            if (this.isMicStreamStopped) {    
+                this.recorderService.stop();
+                this.webSocketClient.send(new WSMessage("close").toJson());
+                this.setMicButtonIcon("off");
+            }
+        },
+        onRecorded(event) {
+            this.setBlobUrl(event.detail.recorded.blobUrl);
+
+            this.wavesurfer.on('ready', () => {
+                this.wavesurfer.play();
+            });
+            this.wavesurfer.load(event.detail.recorded.blobUrl);
+        },
         onWSConnected(event) {
+            // Send init message
             this.webSocketClient.send((new WSMessage("init")).toJson());
         },
         onWSClosed(event) {
             this.webSocketClient = null;
-            this.onMicOff();
+            this.isMicStreamStopped = true;
         },
         onWSMessage(event) {
             let message = WSMessage.fromJson(event.data);
@@ -129,22 +130,22 @@ export default {
                     this._onWSErrorMessage(message.data);
                     break;
                 case "close":
-                    this._onWSCloseMEssage(message.data);
+                    this._onWSCloseMessage(message.data);
                     break;
             }
         },
         _onWSOkMessage(data) {
-            this.uniqueId = data.id;
-            this.recorderService.record();
-            this.setMicButtonIcon("on");
             this.isMicStreamStopped = false;
+            this.wavesurfer.un('ready');
+            this.uniqueId = data.id;
+            this.setMicButtonIcon("on");
         },
         _onWSErrorMessage(data) {
-            this.onMicOff();
+            this.isMicStreamStopped = true;
             alert(data.error);
             console.log(data.error);
         },
-        _onWSCloseMEssage(data) {
+        _onWSCloseMessage(data) {
             this.webSocketClient.close();
         }
     }
