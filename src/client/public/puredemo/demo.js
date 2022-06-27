@@ -1,5 +1,4 @@
 'use strict';
-//@TODO 경로 정해라
 import RecorderService from '../RecorderService.js/RecorderService.js'
 
 let wavesurfer, recorderService;
