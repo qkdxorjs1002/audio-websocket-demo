@@ -87,7 +87,7 @@ export default {
 
             this.wavesurfer.loadDecodedBuffer(audioBuffer);
 
-            if (this.isMicStreamStopped) {
+            if (!this.isMicStreamStopped) {
                 // send audio message
                 let message = (new WSMessage(
                     "audio", 
